@@ -15,24 +15,22 @@ const getUserInvites = async (req, res) => {
 
     const invites = await InviteToken.findAll({
       where: {
-        email: user.email,
+        username: user.username,
         usedAt: null,
       },
     });
 
-    // Filter out expired invites
     const validInvites = invites.filter(
       (invite) => new Date(invite.expiresAt).getTime() > Date.now()
     );
 
-    // Get project names for the UI dropdown
     const invitesWithProjects = await Promise.all(
       validInvites.map(async (invite) => {
         const project = await Project.findByPk(invite.projectId);
         return {
           token: invite.token,
           projectName: project ? project.name : "Unknown Project",
-          email: invite.email,
+          username: invite.username,
         };
       })
     );

@@ -7,14 +7,14 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
     },
 
+    username: { 
+      type: DataTypes.STRING, 
+      allowNull: false 
+    },
+
     token: {
       type: DataTypes.STRING,
       unique: true,
-      allowNull: false,
-    },
-
-    email: {
-      type: DataTypes.STRING,
       allowNull: false,
     },
 

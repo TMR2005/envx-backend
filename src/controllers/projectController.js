@@ -1,13 +1,6 @@
-const {
-  User,
-  Project,
-  ProjectMember,
-  InviteToken,
-} = require("../../models");
-
+const { User, Project, ProjectMember, InviteToken } = require("../../models");
 const crypto = require("crypto");
 
-// Create project
 const createProject = async (req, res) => {
   try {
     const { name } = req.body;
@@ -37,7 +30,6 @@ const createProject = async (req, res) => {
   }
 };
 
-// Get user projects
 const getProjects = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -65,7 +57,6 @@ const getProjects = async (req, res) => {
   }
 };
 
-// Get single project
 const getProjectById = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -102,11 +93,10 @@ const getProjectById = async (req, res) => {
   }
 };
 
-// Invite member
 const inviteMember = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { projectId, email } = req.body;
+    const { projectId, username } = req.body;
 
     const membership = await ProjectMember.findOne({
       where: { projectId, userId, role: "owner" },
@@ -119,7 +109,7 @@ const inviteMember = async (req, res) => {
       });
     }
 
-    const invitedUser = await User.findOne({ where: { email } });
+    const invitedUser = await User.findOne({ where: { username } });
 
     if (invitedUser) {
       const existingMember = await ProjectMember.findOne({
@@ -135,13 +125,12 @@ const inviteMember = async (req, res) => {
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     await InviteToken.create({
       projectId,
-      email,
+      username,
       token,
       expiresAt,
       usedAt: null,
@@ -161,7 +150,6 @@ const inviteMember = async (req, res) => {
   }
 };
 
-// Get project members (normalized)
 const getProjectMembers = async (req, res) => {
   try {
     const projectId = req.params.id;
@@ -205,7 +193,6 @@ const getProjectMembers = async (req, res) => {
   }
 };
 
-// Accept invite
 const acceptInvite = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -272,6 +259,7 @@ const acceptInvite = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   createProject,

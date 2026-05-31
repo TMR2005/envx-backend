@@ -13,15 +13,11 @@ if (MASTER_KEY.length !== 32) {
 
 function encrypt(data) {
   const iv = crypto.randomBytes(12);
-
   const cipher = crypto.createCipheriv("aes-256-gcm", MASTER_KEY, iv);
-
-  const plaintext =
-    typeof data === "string" ? data : JSON.stringify(data);
+  const plaintext = typeof data === "string" ? data : JSON.stringify(data);
 
   let encrypted = cipher.update(plaintext, "utf8");
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-
   const tag = cipher.getAuthTag();
 
   return {
@@ -39,7 +35,6 @@ function decrypt(ciphertext, iv, tag) {
   );
 
   decipher.setAuthTag(Buffer.from(tag, "base64"));
-
   let decrypted = decipher.update(Buffer.from(ciphertext, "base64"));
   decrypted = Buffer.concat([decrypted, decipher.final()]);
 

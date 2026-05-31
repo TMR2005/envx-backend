@@ -46,7 +46,6 @@ sequelize
   .authenticate()
   .then(() => {
     console.log("✅ Database connection established");
-    // This tells Neon to build or update your tables based on your models
     return sequelize.sync({ alter: true }); 
   })
   .then(() => console.log("✅ Tables synchronized"))
