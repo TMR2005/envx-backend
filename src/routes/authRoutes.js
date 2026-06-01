@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const { trackEvent, trackFunnelStep } = require("../lib/analytics");
 
 // GitHub OAuth initiation
 router.get("/github", (req, res, next) => {
@@ -32,6 +33,10 @@ router.get(
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    // Track login and signup stage 1 asynchronously
+    trackEvent(req.user.id, "login", null, { github_username: req.user.username }).catch(console.error);
+    trackFunnelStep(req.user.id, "signup", 1).catch(console.error);
 
     // CLI FLOW → redirect to localhost callback
     if (state && state.startsWith("cli:")) {

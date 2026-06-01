@@ -12,6 +12,7 @@ const {
   inviteMember,
   getProjectMembers,
   acceptInvite,
+  getProjectAuditLogs,
 } = require('../controllers/projectController');
 
 // Routes
@@ -21,5 +22,6 @@ router.get('/:id', auth, getProjectById);
 router.post('/invite', auth, inviteMember);
 router.get('/:id/members', auth, getProjectMembers);
 router.post('/accept-invite', auth, acceptInvite);
+router.get('/:id/audit-logs', auth, getProjectAuditLogs);
 
 module.exports = router;

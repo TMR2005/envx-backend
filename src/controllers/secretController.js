@@ -1,5 +1,6 @@
 const { User, Project, ProjectMember, Secret } = require("../../models");
 const crypto = require("crypto");
+const { trackEvent, trackFunnelStep } = require("../lib/analytics");
 
 if (!process.env.MASTER_KEY) {
   throw new Error("MASTER_KEY is not configured");
@@ -92,9 +93,24 @@ const saveSecrets = async (req, res) => {
       });
     }
 
+    const secretCount = secrets.split('\n').filter(line => line.includes('=')).length;
+
+    // Track successful push event (Funnel Stage 3)
+    try {
+      trackEvent(userId, "push", projectId, {
+        secret_count: secretCount,
+        file_size_bytes: secrets.length,
+        source: req.headers["user-agent"]?.includes("node") ? "cli" : "web"
+      }).catch(console.error);
+      trackFunnelStep(userId, "push_secrets", 3).catch(console.error);
+    } catch (trackErr) {
+      console.error("❌ Push secrets tracking error:", trackErr);
+    }
+
     return res.status(created ? 201 : 200).json({
       success: true,
       message: created ? "Secrets created" : "Secrets updated",
+      secretCount
     });
   } catch (error) {
     console.error(error);
@@ -147,6 +163,12 @@ const getSecrets = async (req, res) => {
     } catch {
       parsed = plaintext;
     }
+
+    // Track successful pull event
+    trackEvent(userId, "pull", projectId, {
+      secret_count: typeof parsed === "object" ? Object.keys(parsed).length : 0,
+      source: req.headers["user-agent"]?.includes("node") ? "cli" : "web"
+    }).catch(console.error);
 
     return res.status(200).json({
       success: true,

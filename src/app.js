@@ -13,6 +13,7 @@ const projectsRouter = require("./routes/projectRoutes");
 const secretsRouter = require("./routes/secretsRoutes");
 const authRouter = require("./routes/authRoutes");
 const inviteRouter = require("./routes/inviteRoutes");
+const analyticsRouter = require("./routes/analyticsRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -48,7 +49,24 @@ sequelize
     console.log("✅ Database connection established");
     return sequelize.sync({ alter: true }); 
   })
-  .then(() => console.log("✅ Tables synchronized"))
+  .then(async () => {
+    console.log("✅ Tables synchronized");
+    try {
+      const { createAnalyticsSchema, updateDailyMetrics, markChurnedUsers } = require("./lib/analytics");
+      await createAnalyticsSchema();
+      
+      // Update daily metrics and detect churn every 24 hours
+      setInterval(async () => {
+        await updateDailyMetrics();
+      }, 24 * 60 * 60 * 1000);
+      
+      setInterval(async () => {
+        await markChurnedUsers(7);
+      }, 24 * 60 * 60 * 1000);
+    } catch (err) {
+      console.error("❌ Analytics database startup setup failed:", err);
+    }
+  })
   .catch((err) => {
     console.error("❌ Database connection failed:", err);
     process.exit(1);
@@ -62,6 +80,7 @@ app.use("/auth", authRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/secrets", secretsRouter);
 app.use("/api/invites", inviteRouter);
+app.use("/api/analytics", analyticsRouter);
 
 app.use(errorHandler);
 
