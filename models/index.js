@@ -6,6 +6,7 @@ const Project = require("./Project")(sequelize, DataTypes);
 const ProjectMember = require("./ProjectMember")(sequelize, DataTypes);
 const InviteToken = require("./InviteToken")(sequelize, DataTypes);
 const Secret = require("./Secret")(sequelize, DataTypes);
+const Event = require("./Event")(sequelize, DataTypes);
 
 /* =========================
    ASSOCIATIONS
@@ -27,6 +28,14 @@ Secret.belongsTo(Project, { foreignKey: "projectId" });
 Project.hasMany(InviteToken, { foreignKey: "projectId" });
 InviteToken.belongsTo(Project, { foreignKey: "projectId" });
 
+// User ↔ Event
+User.hasMany(Event, { foreignKey: "userId" });
+Event.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// Project ↔ Event
+Project.hasMany(Event, { foreignKey: "projectId" });
+Event.belongsTo(Project, { foreignKey: "projectId", as: "project" });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -35,4 +44,5 @@ module.exports = {
   ProjectMember,
   InviteToken,
   Secret,
+  Event,
 };
